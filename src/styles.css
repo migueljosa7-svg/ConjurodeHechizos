@@ -350,3 +350,8 @@ input[type="checkbox"]:checked::before { transform: scale(1); }
   .foot { padding-bottom: 96px; }
 }
 @media (prefers-reduced-motion: reduce) { .tmarquee > div { animation: none; } }
+
+/* ===== v3 ajustes ===== */
+.hud-bottom { left: auto; right: 5%; }
+.section { padding: clamp(48px, 7vw, 88px) 0; }
+@media (min-width: 760px) { .steps { flex-wrap: wrap; overflow: visible; } }
