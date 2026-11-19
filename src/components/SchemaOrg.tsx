@@ -1,4 +1,5 @@
 import { PROJECTS } from "../data/projects.ts";
+import { FAQ } from "../data/faq.ts";
 import { CONTACT_EMAIL, SITE, SITE_URL } from "../data/site.ts";
 
 export default function SchemaOrg() {
@@ -45,6 +46,10 @@ export default function SchemaOrg() {
                   publisher: { "@id": `${SITE_URL}/#org` },
                 },
         })),
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: FAQ.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
       },
     ],
   };

@@ -1,28 +1,34 @@
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { PROJECTS } from "../data/projects.ts";
-import { frameArt } from "../lib/art.ts";
-import { useReducedMotion } from "../lib/hooks.ts";
+import type { Project } from "../data/projects.ts";
 
-export default function FilmStripReel() {
-  const ref = useRef<HTMLElement>(null);
-  const reduced = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const x = useTransform(scrollYProgress, [0, 1], ["4%", "-38%"]);
-  const frames = [...PROJECTS, ...PROJECTS];
+/** Tira de película autónoma: se desplaza sola de izquierda a derecha (CSS puro, GPU). */
+export default function FilmStripReel({ scenes, activeId, onSelect }: { scenes: Project[]; activeId: string; onSelect: (i: number) => void }) {
+  const reps = Math.max(1, Math.ceil(6 / scenes.length));
+  const half = Array.from({ length: reps }, () => scenes).flat();
+  const duration = Math.max(24, half.length * 5);
 
   return (
-    <section ref={ref} className="reel" aria-label="Tira de película con fotogramas de nuestras producciones">
-      <motion.div className="strip" style={reduced ? undefined : { x }}>
-        {frames.map((p, i) => (
-          <figure className="cell" key={`${p.id}-${i}`}>
-            <i className="perf" />
-            <div className="cell-img" style={{ backgroundImage: `url("${frameArt(PROJECTS.indexOf(p) + 20, p.hue, 480, 300)}")` }} role="img" aria-label={p.title} />
-            <figcaption className="mono">{String(i + 1).padStart(2, "0")} · {p.title}</figcaption>
-            <i className="perf" />
-          </figure>
-        ))}
-      </motion.div>
-    </section>
+    <div className="reel" role="group" aria-label="Fotogramas del capítulo">
+      <div className="strip" style={{ animationDuration: `${duration}s` }}>
+        {[0, 1].map((copy) =>
+          half.map((p, i) => (
+            <button
+              key={`${copy}-${i}`}
+              type="button"
+              className={`cell${p.id === activeId ? " active" : ""}`}
+              onClick={() => onSelect(scenes.indexOf(p))}
+              aria-hidden={copy === 1}
+              tabIndex={copy === 1 ? -1 : 0}
+              aria-label={`Ver ${p.title}`}
+              data-cursor="REPRODUCIR"
+            >
+              <i className="perf" />
+              <img src={p.photo} alt="" loading="lazy" decoding="async" draggable={false} />
+              <span className="mono">{String((i % half.length) + 1).padStart(2, "0")} · {p.title}</span>
+              <i className="perf" />
+            </button>
+          )),
+        )}
+      </div>
+    </div>
   );
 }
