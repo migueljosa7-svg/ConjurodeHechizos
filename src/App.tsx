@@ -1,5 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import { AnimatePresence, LazyMotion, domAnimation, m, useScroll, useSpring } from "framer-motion";
+import { Stats, TextMarquee, Testimonials } from "./components/Extras.tsx";
 import ClapboardIntro from "./components/ClapboardIntro.tsx";
 import Cursor from "./components/Cursor.tsx";
 import ProjectGrid from "./components/ProjectGrid.tsx";
@@ -8,6 +9,7 @@ import ShowreelTimeline from "./components/ShowreelTimeline.tsx";
 import type { Project } from "./data/projects.ts";
 import { FAQ, PROCESS } from "./data/faq.ts";
 import { CONTACT_EMAIL, SERVICES_LIST, SITE, TRIO } from "./data/site.ts";
+import { SOCIALS, WHATSAPP } from "./data/extras.ts";
 import { loadThirdParties } from "./lib/analytics.ts";
 
 const ProjectionRoom = lazy(() => import("./components/ProjectionRoom.tsx"));
@@ -23,10 +25,18 @@ const reveal = {
 export default function App() {
   const [open, setOpen] = useState<Project | null>(null);
   const [top, setTop] = useState(false);
+  const [inQuote, setInQuote] = useState(false);
   const close = useCallback(() => setOpen(null), []);
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 24, restDelta: 0.001 });
   useEffect(loadThirdParties, []);
+  useEffect(() => {
+    const el = document.getElementById("cotizador");
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setInQuote(e.isIntersecting), { threshold: 0.05 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   useEffect(() => {
     const on = () => setTop(window.scrollY > 900);
     on();
@@ -60,12 +70,14 @@ export default function App() {
           <ShowreelTimeline onOpen={setOpen} />
         </section>
 
-        <section id="proyectos" className="wrap section lazy-section">
+        <TextMarquee />
+
+        <section id="proyectos" className="wrap section">
           <m.h2 {...reveal}>Proyectos</m.h2>
           <ProjectGrid onOpen={setOpen} />
         </section>
 
-        <section id="estudio" className="wrap section lazy-section">
+        <section id="estudio" className="wrap section">
           <m.h2 {...reveal}>El estudio</m.h2>
           <m.p className="lead" {...reveal}>{SITE.description}</m.p>
           <div className="trio">
@@ -78,9 +90,15 @@ export default function App() {
             ))}
           </div>
           <ul className="services">{SERVICES_LIST.map((s) => <li key={s}>{s}</li>)}</ul>
+          <Stats />
         </section>
 
-        <section id="proceso" className="wrap section lazy-section">
+        <section id="opiniones" className="wrap section">
+          <m.h2 {...reveal}>Lo que dicen</m.h2>
+          <Testimonials />
+        </section>
+
+        <section id="proceso" className="wrap section">
           <m.h2 {...reveal}>Del conjuro al estreno</m.h2>
           <ol className="process">
             {PROCESS.map((p, i) => (
@@ -93,7 +111,7 @@ export default function App() {
           </ol>
         </section>
 
-        <section id="cotizador" className="wrap section lazy-section">
+        <section id="cotizador" className="wrap section">
           <m.h2 {...reveal}>Cotizador de rodaje</m.h2>
           <p className="lead">Elige, ajusta y recibe un presupuesto desglosado: rodaje, actores, comidas, dietas, desplazamientos y postproducción.</p>
           <Suspense fallback={<p className="hint">Cargando cotizador…</p>}>
@@ -101,7 +119,7 @@ export default function App() {
           </Suspense>
         </section>
 
-        <section id="faq" className="wrap section lazy-section">
+        <section id="faq" className="wrap section">
           <m.h2 {...reveal}>Preguntas frecuentes</m.h2>
           <div className="faq">
             {FAQ.map((f) => (
@@ -116,8 +134,14 @@ export default function App() {
 
       <footer className="wrap foot">
         <p>© {new Date().getFullYear()} {SITE.name} · Aragón, España</p>
-        <a href={`mailto:${CONTACT_EMAIL}`} data-cursor="COTIZAR">{CONTACT_EMAIL}</a>
+        <div className="foot-links">
+          {SOCIALS.filter((s) => s.url).map((s) => <a key={s.name} href={s.url} target="_blank" rel="noopener noreferrer">{s.name}</a>)}
+          <a href={`mailto:${CONTACT_EMAIL}`} data-cursor="COTIZAR">{CONTACT_EMAIL}</a>
+        </div>
       </footer>
+
+      <a className={`cta-float${inQuote ? " hide" : ""}`} href="#cotizador">Pedir presupuesto</a>
+      {WHATSAPP && <a className="wa" href={`https://wa.me/${WHATSAPP}`} target="_blank" rel="noopener noreferrer" aria-label="Escríbenos por WhatsApp">WhatsApp</a>}
 
       {top && <button type="button" className="to-top" aria-label="Volver arriba" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>↑</button>}
 
