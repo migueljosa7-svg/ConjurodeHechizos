@@ -1,0 +1,10 @@
+{
+  "tasks": {
+    "check": "deno check src/lib/*.ts src/data/*.ts",
+    "test:seo": "deno run --allow-read scripts/validate-seo.ts",
+    "build:preview": "deno run -A npm:vite build",
+    "serve": "deno run --allow-net --allow-read jsr:@std/http/file-server dist"
+  },
+  "compilerOptions": { "lib": ["deno.window", "dom"], "strict": true },
+  "nodeModulesDir": "auto"
+}
